@@ -1,0 +1,8 @@
+<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#E8F5E9" />
+  <circle cx="200" cy="120" r="80" fill="#81C784" />
+  <circle cx="200" cy="120" r="60" fill="#4CAF50" />
+  <circle cx="200" cy="120" r="40" fill="#388E3C" />
+  <text x="200" y="220" font-family="Arial" font-size="18" text-anchor="middle" fill="#1B5E20">Instituto de Psicologia Aplicada</text>
+  <text x="200" y="240" font-family="Arial" font-size="12" text-anchor="middle" fill="#2E7D32">Tratamentos Inovadores</text>
+</svg>

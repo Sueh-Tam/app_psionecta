@@ -1,0 +1,7 @@
+<svg width="300" height="300" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="150" cy="150" r="150" fill="#EFEBE9" />
+  <circle cx="150" cy="100" r="50" fill="#D7CCC8" />
+  <rect x="100" y="150" width="100" height="100" rx="10" fill="#BCAAA4" />
+  <text x="150" y="190" font-family="Arial" font-size="16" text-anchor="middle" fill="#3E2723">Dr. Fernando Lima</text>
+  <text x="150" y="210" font-family="Arial" font-size="12" text-anchor="middle" fill="#4E342E">Psicologia do Esporte</text>
+</svg>

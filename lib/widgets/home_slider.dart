@@ -17,7 +17,6 @@ class _HomeSliderState extends State<HomeSlider> {
   @override
   void initState() {
     super.initState();
-    // Auto-scroll timer
     Future.delayed(const Duration(seconds: 1), () {
       if (mounted) {
         _autoScroll();
@@ -135,7 +134,6 @@ class _HomeSliderState extends State<HomeSlider> {
           ),
         ),
         const SizedBox(height: 10),
-        // Indicadores de página
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(

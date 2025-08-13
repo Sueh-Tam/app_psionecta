@@ -1,9 +1,35 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import '../models/clinic.dart';
 import '../models/psychologist.dart';
 
 class DataService {
-  // Dados estáticos de clínicas
-  static List<Clinic> getClinics() {
+  static const String baseUrl = 'http://127.0.0.1:8000/api';
+
+  static Future<List<Clinic>> getClinics() async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/clinics'));
+      
+      if (response.statusCode == 200) {
+        List<dynamic> data = jsonDecode(response.body);
+        return data.map((item) => Clinic(
+          id: item['id'].toString(),
+          name: item['name'] ?? '',
+          address: item['email'] ?? '',
+          imageUrl: 'assets/images/clinic${(int.parse(item['id'].toString()) % 4) + 1}.svg',
+          description: (item['document_type'] ?? '') + ': ' + (item['document_number'] ?? ''),
+        )).toList();
+      } else {
+        print('Erro ao carregar clínicas: ${response.statusCode}');
+        return _getStaticClinics();
+      }
+    } catch (e) {
+      print('Exceção ao carregar clínicas: $e');
+      return _getStaticClinics();
+    }
+  }
+
+  static List<Clinic> _getStaticClinics() {
     return [
       Clinic(
         id: '1',
@@ -36,7 +62,6 @@ class DataService {
     ];
   }
 
-  // Dados estáticos de psicólogos
   static List<Psychologist> getPsychologists() {
     return [
       Psychologist(
@@ -106,12 +131,10 @@ class DataService {
     ];
   }
 
-  // Método para obter psicólogos por clínica
-  static List<Psychologist> getPsychologistsByClinic(String clinicId) {
+  static Future<List<Psychologist>> getPsychologistsByClinic(String clinicId) async {
     return getPsychologists().where((psy) => psy.clinicId == clinicId).toList();
   }
 
-  // Método para obter dados para o slider
   static List<Map<String, String>> getSliderData() {
     return [
       {

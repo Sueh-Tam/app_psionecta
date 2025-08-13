@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:provider/provider.dart';
 import 'screens/home_page.dart';
+import 'services/auth_service.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,10 +13,21 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Psiconecta',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
+    return ChangeNotifierProvider(
+      create: (context) => AuthService(),
+      child: MaterialApp(
+        title: 'Psiconecta',
+        debugShowCheckedModeBanner: false,
+        localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+          ],
+        supportedLocales: const [
+        Locale('pt', 'BR'),
+        Locale('en', 'US'),
+      ],
+        theme: ThemeData(
         primarySwatch: Colors.blue,
         primaryColor: Colors.blue.shade800,
         fontFamily: 'Roboto',
@@ -21,7 +35,7 @@ class MyApp extends StatelessWidget {
           backgroundColor: Colors.blue.shade800,
           elevation: 0,
           centerTitle: false,
-        ),
+          ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.blue.shade800,
@@ -32,7 +46,8 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const HomePage(),
+        home: const HomePage(),
+      ),
     );
   }
 }

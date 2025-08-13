@@ -11,8 +11,6 @@ class PsychologistsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final psychologists = DataService.getPsychologistsByClinic(clinic.id);
-
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -26,7 +24,6 @@ class PsychologistsPage extends StatelessWidget {
       ),
       body: Column(
         children: [
-          // Informações da clínica
           Container(
             padding: const EdgeInsets.all(16),
             color: Colors.blue.shade50,
@@ -88,37 +85,45 @@ class PsychologistsPage extends StatelessWidget {
             ),
           ),
 
-          // Título da seção de psicólogos
-          Padding(
-            padding: const EdgeInsets.all(16.0),
+          const Padding(
+            padding: EdgeInsets.all(16.0),
             child: Row(
               children: [
-                const Text(
+                Text(
                   'Psicólogos Disponíveis',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const Spacer(),
-                Text(
-                  '${psychologists.length} profissionais',
-                  style: TextStyle(color: Colors.grey[600]),
-                ),
               ],
             ),
           ),
 
-          // Lista de psicólogos
           Expanded(
-            child: psychologists.isEmpty
-                ? const Center(
+            child: FutureBuilder<List<Psychologist>>(
+              future: DataService.getPsychologistsByClinic(clinic.id),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(
+                    child: Text(
+                      'Erro ao carregar psicólogos: ${snapshot.error}',
+                      style: const TextStyle(fontSize: 16),
+                      textAlign: TextAlign.center,
+                    ),
+                  );
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(
                     child: Text(
                       'Nenhum psicólogo disponível nesta clínica no momento.',
                       style: TextStyle(fontSize: 16),
                     ),
-                  )
-                : ListView.builder(
+                  );
+                } else {
+                  final psychologists = snapshot.data!;
+                  return ListView.builder(
                     itemCount: psychologists.length,
                     itemBuilder: (context, index) {
                       final psychologist = psychologists[index];
@@ -183,13 +188,15 @@ class PsychologistsPage extends StatelessWidget {
                         ),
                       );
                     },
-                  ),
+                  );
+                }
+              },
+            ),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          // Implementar lógica de agendamento
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
                 content: Text('Função de agendamento será implementada em breve')),

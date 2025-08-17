@@ -102,7 +102,7 @@ class PsychologistsPage extends StatelessWidget {
 
           Expanded(
             child: FutureBuilder<List<Psychologist>>(
-              future: DataService.getPsychologistsByClinic(clinic.id),
+              future: DataService.getPsychologistsByClinic(int.parse(clinic.id)),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -137,7 +137,7 @@ class PsychologistsPage extends StatelessWidget {
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(40),
                                 child: SvgPicture.asset(
-                                  psychologist.imageUrl,
+                                  psychologist.imageUrl ?? 'assets/default_avatar.svg',
                                   width: 80,
                                   height: 80,
                                   fit: BoxFit.cover,
@@ -163,7 +163,7 @@ class PsychologistsPage extends StatelessWidget {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      psychologist.specialty,
+                                      psychologist.specialty ?? 'Especialidade não informada',
                                       style: TextStyle(
                                         fontSize: 14,
                                         color: Colors.blue[700],
@@ -172,7 +172,7 @@ class PsychologistsPage extends StatelessWidget {
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
-                                      psychologist.bio,
+                                      psychologist.bio ?? 'Biografia não informada',
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(

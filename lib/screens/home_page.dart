@@ -8,6 +8,7 @@ import '../widgets/home_slider.dart';
 import 'psychologists_page.dart';
 import 'clinics_page.dart';
 import 'Auth/login_page.dart';
+import 'financeiro/financeiro_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -35,14 +36,71 @@ class HomePage extends StatelessWidget {
                       style: const TextStyle(color: Colors.white),
                     ),
                     const SizedBox(width: 8),
-                    IconButton(
-                      icon: const Icon(Icons.logout, color: Colors.white),
-                      onPressed: () {
-                        authService.logout();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Logout realizado com sucesso')),
-                        );
+                    PopupMenuButton<String>(
+                      icon: const Icon(Icons.account_circle, color: Colors.white),
+                      onSelected: (String value) {
+                        switch (value) {
+                          case 'perfil':
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Perfil será implementado em breve')),
+                            );
+                            break;
+                          case 'agendar':
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Agendamento será implementado em breve')),
+                            );
+                            break;
+                          case 'financeiro':
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const FinanceiroPage(),
+                              ),
+                            );
+                            break;
+                          case 'logout':
+                            authService.logout();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Logout realizado com sucesso')),
+                            );
+                            break;
+                        }
                       },
+                      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                        const PopupMenuItem<String>(
+                          value: 'perfil',
+                          child: ListTile(
+                            leading: Icon(Icons.person),
+                            title: Text('Perfil'),
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        ),
+                        const PopupMenuItem<String>(
+                          value: 'agendar',
+                          child: ListTile(
+                            leading: Icon(Icons.calendar_today),
+                            title: Text('Agendar consulta'),
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        ),
+                        const PopupMenuItem<String>(
+                          value: 'financeiro',
+                          child: ListTile(
+                            leading: Icon(Icons.attach_money),
+                            title: Text('Financeiro'),
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        ),
+                        const PopupMenuDivider(),
+                        const PopupMenuItem<String>(
+                          value: 'logout',
+                          child: ListTile(
+                            leading: Icon(Icons.logout, color: Colors.red),
+                            title: Text('Sair', style: TextStyle(color: Colors.red)),
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 );

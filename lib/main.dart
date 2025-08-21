@@ -8,13 +8,31 @@ void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  late AuthService _authService;
+
+  @override
+  void initState() {
+    super.initState();
+    _authService = AuthService();
+    _initializeAuth();
+  }
+
+  Future<void> _initializeAuth() async {
+    await _authService.checkLoggedInUser();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => AuthService(),
+    return ChangeNotifierProvider.value(
+      value: _authService,
       child: MaterialApp(
         title: 'Psiconecta',
         debugShowCheckedModeBanner: false,

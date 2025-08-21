@@ -8,6 +8,7 @@ import '../widgets/home_slider.dart';
 import 'psychologists_page.dart';
 import 'clinics_page.dart';
 import 'Auth/login_page.dart';
+import 'Auth/update_profile_page.dart';
 import 'financeiro/financeiro_page.dart';
 
 class HomePage extends StatelessWidget {
@@ -41,8 +42,11 @@ class HomePage extends StatelessWidget {
                       onSelected: (String value) {
                         switch (value) {
                           case 'perfil':
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Perfil será implementado em breve')),
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const UpdateProfilePage(),
+                              ),
                             );
                             break;
                           case 'agendar':

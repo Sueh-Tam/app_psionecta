@@ -229,6 +229,165 @@ class AuthService with ChangeNotifier {
     return false;
   }
 
+  Future<Map<String, dynamic>> updateProfile({
+    required String name,
+    required String email,
+    required String documentNumber,
+    required DateTime birthDate,
+    String? password,
+    String? passwordConfirmation,
+  }) async {
+    if (_currentUser == null) {
+      return {
+        'success': false,
+        'message': 'Usuário não está logado',
+      };
+    }
+
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      if (_csrfToken == null) {
+        final token = await getCsrfToken();
+        if (token == null) {
+          return {
+            'success': false,
+            'message': 'Erro ao obter token de segurança',
+          };
+        }
+      }
+
+      final formattedDate = DateFormat('yyyy-MM-dd').format(birthDate);
+      
+      Map<String, dynamic> requestBody = {
+        'id': _currentUser!.id,
+        'name': name,
+        'email': email,
+        'document_number': documentNumber,
+        'birth_date': formattedDate,
+      };
+
+      // Adicionar senha apenas se foi fornecida
+      if (password != null && password.isNotEmpty) {
+
+        requestBody['password'] = password;
+        requestBody['password_confirmation'] = passwordConfirmation ?? password;
+        print('senha: '+ requestBody['password']);
+      }
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/update-profile'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          '_csrfToken': _csrfToken!,
+        },
+        body: jsonEncode(requestBody),
+      );
+
+      if (response.statusCode == 200) {
+        if (response.body.isEmpty) {
+          // Atualizar dados do usuário local com os dados do formulário
+          if (_currentUser != null) {
+            _currentUser = User(
+              id: _currentUser!.id,
+              idClinic: _currentUser!.idClinic,
+              name: name,
+              email: email,
+              documentType: _currentUser!.documentType,
+              documentNumber: documentNumber,
+              birthDate: '${birthDate.year.toString().padLeft(4, '0')}-${birthDate.month.toString().padLeft(2, '0')}-${birthDate.day.toString().padLeft(2, '0')}',
+              appointmentPrice: _currentUser!.appointmentPrice,
+              type: _currentUser!.type,
+              situation: _currentUser!.situation,
+              status: _currentUser!.status,
+              createdAt: _currentUser!.createdAt,
+              updatedAt: _currentUser!.updatedAt,
+              deletedAt: _currentUser!.deletedAt,
+            );
+            await _saveUserData(_currentUser!.toJson());
+            notifyListeners();
+          }
+          return {
+            'success': true,
+            'message': 'Perfil atualizado com sucesso!',
+          };
+        }
+        
+        final data = jsonDecode(response.body);
+        
+        if (data['success'] == true) {
+          // Atualizar dados do usuário local
+          if (data.containsKey('user')) {
+            _currentUser = User.fromJson(data['user']);
+            await _saveUserData(data['user']);
+          } else if (_currentUser != null) {
+            // Se a API não retornar os dados do usuário, atualizar com os dados do formulário
+            _currentUser = User(
+              id: _currentUser!.id,
+              idClinic: _currentUser!.idClinic,
+              name: name,
+              email: email,
+              documentType: _currentUser!.documentType,
+              documentNumber: documentNumber,
+              birthDate: '${birthDate.year.toString().padLeft(4, '0')}-${birthDate.month.toString().padLeft(2, '0')}-${birthDate.day.toString().padLeft(2, '0')}',
+
+              appointmentPrice: _currentUser!.appointmentPrice,
+              type: _currentUser!.type,
+              situation: _currentUser!.situation,
+              status: _currentUser!.status,
+              createdAt: _currentUser!.createdAt,
+              updatedAt: _currentUser!.updatedAt,
+              deletedAt: _currentUser!.deletedAt,
+            );
+            await _saveUserData(_currentUser!.toJson());
+          }
+          
+          notifyListeners();
+          return {
+            'success': true,
+            'message': data['message'] ?? 'Perfil atualizado com sucesso!',
+          };
+        } else {
+          return {
+            'success': false,
+            'message': data['message'] ?? 'Erro ao atualizar perfil',
+          };
+        }
+      } else {
+        if (response.body.isEmpty) {
+          return {
+            'success': false,
+            'message': 'Resposta vazia. Erro ao atualizar perfil: ' + response.statusCode.toString(),
+          };
+        }
+        
+        try {
+          final data = jsonDecode(response.body);
+          return {
+            'success': false,
+            'message': data['message'] ?? 'Erro ao atualizar perfil: \${response.statusCode}',
+          };
+        } catch (e) {
+          return {
+            'success': false,
+            'message': 'Erro ao atualizar perfil: \${response.statusCode}',
+          };
+        }
+      }
+    } catch (e) {
+      print('Exceção ao atualizar perfil: ' + e.toString());
+      return {
+        'success': false,
+        'message': 'Erro de conexão. Tente novamente.',
+      };
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<void> _saveUserData(Map<String, dynamic> userData) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('user_data', jsonEncode(userData));

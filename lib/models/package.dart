@@ -1,4 +1,5 @@
 import 'appointment.dart';
+import 'psychologist.dart';
 
 class Package {
   final int id;
@@ -11,8 +12,8 @@ class Package {
   final String createdAt;
   final String updatedAt;
   final String? deletedAt;
-  final Map<String, dynamic> psychologist;
-  final Patient patient;
+  final Psychologist psychologist;
+  final Patient? patient;
   final List<Appointment> appointments;
 
   Package({
@@ -27,7 +28,7 @@ class Package {
     required this.updatedAt,
     this.deletedAt,
     required this.psychologist,
-    required this.patient,
+    this.patient,
     required this.appointments,
   });
 
@@ -43,8 +44,8 @@ class Package {
       createdAt: json['created_at'],
       updatedAt: json['updated_at'],
       deletedAt: json['deleted_at'],
-      psychologist: json['psychologist'] as Map<String, dynamic>,
-      patient: Patient.fromJson(json['patient']),
+      psychologist: Psychologist.fromJson(json['psychologist']),
+      patient: json['patient'] != null ? Patient.fromJson(json['patient']) : null,
       appointments: (json['appointments'] as List<dynamic>? ?? [])
           .map((appointment) => Appointment.fromJson(appointment))
           .toList(),
@@ -63,8 +64,8 @@ class Package {
       'created_at': createdAt,
       'updated_at': updatedAt,
       'deleted_at': deletedAt,
-      'psychologist': psychologist,
-      'patient': patient.toJson(),
+      'psychologist': psychologist.toJson(),
+      'patient': patient?.toJson(),
       'appointments': appointments.map((appointment) => appointment.toJson()).toList(),
     };
   }

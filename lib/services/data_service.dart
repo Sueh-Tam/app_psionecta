@@ -3,6 +3,8 @@ import 'package:http/http.dart' as http;
 import '../models/clinic.dart';
 import '../models/psychologist.dart';
 import '../models/package.dart';
+import '../models/availability.dart';
+import '../models/appointment.dart';
 
 class DataService {
   static const String baseUrl = 'http://127.0.0.1:8000/api';
@@ -303,6 +305,131 @@ class DataService {
         'success': false,
         'message': 'Erro de conexão. Tente novamente.',
       };
+    }
+  }
+
+  static Future<List<Package>> getActivePackages(int userId) async {
+    try {
+      final url = '$baseUrl/packages/activePackages/$userId';
+      print('Fazendo requisição para: $url');
+      
+      final response = await http.get(
+        Uri.parse(url),
+      );
+      
+      print('Status da resposta: ${response.statusCode}');
+      print('Corpo da resposta: ${response.body}');
+      
+      if (response.statusCode == 200) {
+        List<dynamic> data = jsonDecode(response.body);
+        print('Dados decodificados: $data');
+        return data.map((item) => Package.fromJson(item)).toList();
+      } else {
+        print('Erro ao carregar pacotes ativos: ${response.statusCode}');
+        print('Mensagem de erro: ${response.body}');
+        return [];
+      }
+    } catch (e) {
+      print('Exceção ao carregar pacotes ativos: $e');
+      return [];
+    }
+  }
+
+  static Future<List<Availability>> getAvailabilities(int psychologistId) async {
+    try {
+      final url = '$baseUrl/psychologists/$psychologistId/availabilities';
+      print('Fazendo requisição para: $url');
+      
+      final response = await http.get(
+        Uri.parse(url),
+      );
+      
+      print('Status da resposta: ${response.statusCode}');
+      print('Corpo da resposta: ${response.body}');
+      
+      if (response.statusCode == 200) {
+        List<dynamic> data = jsonDecode(response.body);
+        print('Dados decodificados: $data');
+        return data.map((item) => Availability.fromJson(item)).toList();
+      } else {
+        print('Erro ao carregar disponibilidades: ${response.statusCode}');
+        print('Mensagem de erro: ${response.body}');
+        return [];
+      }
+    } catch (e) {
+      print('Exceção ao carregar disponibilidades: $e');
+      return [];
+    }
+  }
+
+  static Future<Map<String, dynamic>> scheduleAppointment(int packageId, int availabilityId) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/appointments/schedule'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: json.encode({
+        'package_id': packageId,
+        'availability_id': availabilityId,
+      }),
+    );
+
+    final responseData = json.decode(response.body);
+    print(responseData['message']);
+    if (response.statusCode == 200) {
+      return {
+        'success': true,
+        'message': responseData['message'],
+      };
+    } else {
+      return {
+        'success': false,
+        'message': responseData['message'],
+      };
+    }
+    
+  }
+
+  static Future<List<Appointment>> getScheduledAppointments(int userId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/appointments/all?user_id=19'),
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        return data.map((json) => Appointment.fromJson(json)).toList();
+      } else {
+        throw Exception('Falha ao carregar consultas agendadas');
+      }
+    } catch (e) {
+      print('Erro ao carregar consultas agendadas: $e');
+      throw Exception('Falha ao carregar consultas agendadas');
+    }
+  }
+
+  static Future<bool> cancelAppointment(int appointmentId) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/appointments/cancel'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: json.encode({
+          'appointment_id': appointmentId,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        throw Exception('Falha ao cancelar consulta ${response.body}');
+      }
+    } catch (e) {
+      print('Erro ao cancelar consulta: $e');
+      throw Exception('Falha ao cancelar consulta');
     }
   }
 }

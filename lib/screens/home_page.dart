@@ -10,6 +10,8 @@ import 'clinics_page.dart';
 import 'Auth/login_page.dart';
 import 'Auth/update_profile_page.dart';
 import 'financeiro/financeiro_page.dart';
+import 'consultas/agendar_consulta_page.dart';
+import 'consultas/consultas_agendadas_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -50,8 +52,19 @@ class HomePage extends StatelessWidget {
                             );
                             break;
                           case 'agendar':
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Agendamento será implementado em breve')),
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const AgendarConsultaPage(),
+                              ),
+                            );
+                            break;
+                          case 'consultas':
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const ConsultasAgendadasPage(),
+                              ),
                             );
                             break;
                           case 'financeiro':
@@ -84,6 +97,14 @@ class HomePage extends StatelessWidget {
                           child: ListTile(
                             leading: Icon(Icons.calendar_today),
                             title: Text('Agendar consulta'),
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        ),
+                        const PopupMenuItem<String>(
+                          value: 'consultas',
+                          child: ListTile(
+                            leading: Icon(Icons.event_note),
+                            title: Text('Consultas agendadas'),
                             contentPadding: EdgeInsets.zero,
                           ),
                         ),

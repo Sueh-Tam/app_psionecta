@@ -194,7 +194,7 @@ class _ConsultaPacotesPageState extends State<ConsultaPacotesPage> {
                                   children: [
                                     Expanded(
                                       child: Text(
-                                        package.psychologist['name'],
+                                        package.psychologist.name,
                                         style: const TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
@@ -367,8 +367,8 @@ class _ConsultaPacotesPageState extends State<ConsultaPacotesPage> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                _buildDetailRow('Psicólogo', detailedPackage.psychologist['name'] ?? 'Não informado'),
-                _buildDetailRow('CRP', detailedPackage.psychologist['document_number'] ?? 'Não informado'),
+                _buildDetailRow('Psicólogo', detailedPackage.psychologist.name ?? 'Não informado'),
+                _buildDetailRow('CRP', detailedPackage.psychologist.documentNumber ?? 'Não informado'),
                 _buildDetailRow('Total de Consultas', '${detailedPackage.totalAppointments}'),
                 _buildDetailRow('Consultas Restantes', '${detailedPackage.balance}'),
                 _buildDetailRow('Valor Total', _formatCurrency(detailedPackage.price)),

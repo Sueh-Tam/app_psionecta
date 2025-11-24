@@ -195,13 +195,13 @@ class _RegisterPageState extends State<RegisterPage> {
                     String text = newValue.text;
                     if (text.length <= 11) {
                       if (text.length >= 4) {
-                        text = text.substring(0, 3) + '.' + text.substring(3);
+                        text = '${text.substring(0, 3)}.${text.substring(3)}';
                       }
                       if (text.length >= 8) {
-                        text = text.substring(0, 7) + '.' + text.substring(7);
+                        text = '${text.substring(0, 7)}.${text.substring(7)}';
                       }
                       if (text.length >= 12) {
-                        text = text.substring(0, 11) + '-' + text.substring(11);
+                        text = '${text.substring(0, 11)}-${text.substring(11)}';
                       }
                     }
                     return TextEditingValue(

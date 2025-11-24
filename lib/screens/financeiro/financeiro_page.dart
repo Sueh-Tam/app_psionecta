@@ -29,7 +29,7 @@ class FinanceiroPage extends StatelessWidget {
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFF1565C0),
+                color: Color(0xFF1565C0),
               ),
               textAlign: TextAlign.center,
             ),
@@ -137,7 +137,7 @@ class FinanceiroPage extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xFF1565C0),
+                      color: Color(0xFF1565C0),
                     ),
                   ),
                   const SizedBox(height: 5),
@@ -153,7 +153,7 @@ class FinanceiroPage extends StatelessWidget {
             ),
             const Icon(
               Icons.arrow_forward_ios,
-              color: const Color(0xFF1565C0),
+              color: Color(0xFF1565C0),
               size: 20,
             ),
           ],

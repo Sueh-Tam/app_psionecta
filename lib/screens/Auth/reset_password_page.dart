@@ -80,16 +80,16 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.blue.shade800,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Redefinir Senha',
           style: TextStyle(
-            color: Colors.black,
+            color: Colors.white,
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
@@ -143,13 +143,13 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                       String text = newValue.text;
                       if (text.length <= 11) {
                         if (text.length >= 4) {
-                          text = text.substring(0, 3) + '.' + text.substring(3);
+                          text = '${text.substring(0, 3)}.${text.substring(3)}';
                         }
                         if (text.length >= 8) {
-                          text = text.substring(0, 7) + '.' + text.substring(7);
+                          text = '${text.substring(0, 7)}.${text.substring(7)}';
                         }
                         if (text.length >= 12) {
-                          text = text.substring(0, 11) + '-' + text.substring(11);
+                          text = '${text.substring(0, 11)}-${text.substring(11)}';
                         }
                       }
                       return TextEditingValue(
@@ -254,7 +254,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                 ElevatedButton(
                   onPressed: _isLoading ? null : _resetPassword,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2E7D32),
+                    backgroundColor: Colors.blue.shade800,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
@@ -272,7 +272,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                           ),
                         )
                       : const Text(
-                          'Redefinir Senha',
+                          'REDEFINIR SENHA',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -283,10 +283,10 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
 
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(
+                  child: Text(
                     'Voltar ao Login',
                     style: TextStyle(
-                      color: Color(0xFF2E7D32),
+                      color: Colors.blue.shade800,
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),

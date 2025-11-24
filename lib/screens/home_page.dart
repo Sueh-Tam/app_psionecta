@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/clinic.dart';
+import '../models/appointment.dart';
 import '../services/data_service.dart';
 import '../services/auth_service.dart';
+import '../services/notification_service.dart';
 import '../widgets/clinic_item.dart';
 import '../widgets/home_slider.dart';
 import 'psychologists_page.dart';
@@ -13,8 +15,113 @@ import 'financeiro/financeiro_page.dart';
 import 'consultas/agendar_consulta_page.dart';
 import 'consultas/consultas_agendadas_page.dart';
 
-class HomePage extends StatelessWidget {
-  const HomePage({Key? key}) : super(key: key);
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  bool _checkedTomorrowNotification = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final authService = Provider.of<AuthService>(context);
+    if (authService.isAuthenticated && !_checkedTomorrowNotification) {
+      Future.microtask(_checkTomorrowAppointment);
+    }
+  }
+
+  Future<void> _checkTomorrowAppointment() async {
+    try {
+      final authService = Provider.of<AuthService>(context, listen: false);
+      final userId = authService.currentUser?.id;
+      if (userId == null) return;
+
+      await NotificationService.ensureInitialized();
+
+      final appointments = await DataService.getScheduledAppointments(userId);
+      final tomorrow = DateTime.now().add(const Duration(days: 1));
+
+      Appointment? nextDayAppointment;
+      for (final a in appointments) {
+        if (a.status.toLowerCase() != 'scheduled') continue;
+        final date = DateTime.tryParse(a.dtAvailability);
+        if (date == null) continue;
+        if (date.year == tomorrow.year &&
+            date.month == tomorrow.month &&
+            date.day == tomorrow.day) {
+          nextDayAppointment = a;
+          break;
+        }
+      }
+
+      if (nextDayAppointment != null && mounted) {
+        String doctorName = 'Psicólogo(a)';
+        try {
+          final psychs = await DataService.getPsychologistsByClinic(nextDayAppointment.clinicId);
+          final matches = psychs.where((p) => p.id == nextDayAppointment!.psychologistId).toList();
+          if (matches.isNotEmpty) {
+            doctorName = matches.first.name;
+          } else if (psychs.isNotEmpty) {
+            doctorName = psychs.first.name;
+          }
+        } catch (_) {}
+
+        await NotificationService.showNow(
+          'Consulta amanhã',
+          'Você tem consulta amanhã às ${nextDayAppointment!.formattedTime} com $doctorName.'
+        );
+
+        await showDialog(
+          context: context,
+          builder: (ctx) {
+            return AlertDialog(
+              backgroundColor: Colors.blue.shade50,
+              title: Text(
+                'Consulta amanhã',
+                style: TextStyle(
+                  color: Colors.blue.shade800,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              content: Text(
+                'Você tem consulta amanhã às ${nextDayAppointment!.formattedTime} com $doctorName.',
+                style: TextStyle(color: Colors.blue.shade800),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: Text(
+                    'Ok',
+                    style: TextStyle(color: Colors.blue.shade800),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ConsultasAgendadasPage(),
+                      ),
+                    );
+                  },
+                  child: const Text('Ver consultas'),
+                ),
+              ],
+            );
+          },
+        );
+      }
+
+      _checkedTomorrowNotification = true;
+    } catch (_) {
+      _checkedTomorrowNotification = true;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -12,4 +12,14 @@ class Clinic {
     required this.imageUrl,
     required this.description,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'address': address,
+      'imageUrl': imageUrl,
+      'description': description,
+    };
+  }
 }

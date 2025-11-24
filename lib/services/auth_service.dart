@@ -4,9 +4,11 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.dart';
 import 'package:intl/intl.dart';
+import '../config/app_config.dart';
 
 class AuthService with ChangeNotifier {
-  static const String baseUrl = 'http://127.0.0.1:8000/api';
+  // Usa a baseUrl centralizada para consistência entre plataformas
+  static String get baseUrl => AppConfig.baseUrl;
   User? _currentUser;
   String? _csrfToken;
   bool _isLoading = false;
@@ -359,7 +361,7 @@ class AuthService with ChangeNotifier {
         if (response.body.isEmpty) {
           return {
             'success': false,
-            'message': 'Resposta vazia. Erro ao atualizar perfil: ' + response.statusCode.toString(),
+            'message': 'Resposta vazia. Erro ao atualizar perfil: ${response.statusCode}',
           };
         }
         
@@ -377,7 +379,7 @@ class AuthService with ChangeNotifier {
         }
       }
     } catch (e) {
-      print('Exceção ao atualizar perfil: ' + e.toString());
+      print('Exceção ao atualizar perfil: $e');
       return {
         'success': false,
         'message': 'Erro de conexão. Tente novamente.',

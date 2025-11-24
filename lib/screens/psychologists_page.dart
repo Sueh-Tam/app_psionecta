@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
 import '../models/clinic.dart';
 import '../models/psychologist.dart';
 import '../services/data_service.dart';
+import '../services/auth_service.dart';
+import 'Auth/login_page.dart';
+import 'financeiro/compra_pacotes_page.dart';
 
 class PsychologistsPage extends StatelessWidget {
   final Clinic clinic;
 
-  const PsychologistsPage({Key? key, required this.clinic}) : super(key: key);
+  const PsychologistsPage({super.key, required this.clinic});
 
   @override
   Widget build(BuildContext context) {
@@ -196,15 +200,37 @@ class PsychologistsPage extends StatelessWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text('Função de agendamento será implementada em breve')),
-          );
+        onPressed: () async {
+          final authService = Provider.of<AuthService>(context, listen: false);
+          final currentUser = authService.currentUser;
+          
+          if (currentUser == null) {
+            // Usuário não está logado, redirecionar para login
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const LoginPage()),
+            );
+            
+            // Mostrar notificação
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Você precisa fazer login para comprar um pacote'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          } else {
+            // Usuário está logado, navegar para página de compra de pacotes
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CompraPacotesPage(clinicaPreSelecionada: clinic.toJson()),
+              ),
+            );
+          }
         },
-        backgroundColor: Colors.green,
-        icon: const Icon(Icons.calendar_today),
-        label: const Text('Agendar Consulta'),
+        backgroundColor: Colors.blue.shade800,
+        icon: const Icon(Icons.shopping_cart, color: Colors.white),
+        label: const Text('Comprar Pacote', style: TextStyle(color: Colors.white)),
       ),
     );
   }

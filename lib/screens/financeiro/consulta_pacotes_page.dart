@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 class ConsultaPacotesPage extends StatefulWidget {
   final int userId;
 
-  const ConsultaPacotesPage({Key? key, required this.userId}) : super(key: key);
+  const ConsultaPacotesPage({super.key, required this.userId});
 
   @override
   State<ConsultaPacotesPage> createState() => _ConsultaPacotesPageState();
@@ -96,7 +96,7 @@ class _ConsultaPacotesPageState extends State<ConsultaPacotesPage> {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF1565C0),
+                    color: Color(0xFF1565C0),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -105,7 +105,7 @@ class _ConsultaPacotesPageState extends State<ConsultaPacotesPage> {
                     child: Padding(
                       padding: EdgeInsets.all(50.0),
                       child: CircularProgressIndicator(
-                        color: const Color(0xFF1565C0),
+                        color: Color(0xFF1565C0),
                       ),
                     ),
                   )
@@ -198,7 +198,7 @@ class _ConsultaPacotesPageState extends State<ConsultaPacotesPage> {
                                         style: const TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
-                                          color: const Color(0xFF1565C0),
+                                          color: Color(0xFF1565C0),
                                         ),
                                       ),
                                     ),
@@ -285,7 +285,7 @@ class _ConsultaPacotesPageState extends State<ConsultaPacotesPage> {
                                     ),
                                     const SizedBox(width: 4),
                                     Text(
-                                      package.paymentMethod.toUpperCase(),
+                                      _getPaymentMethodText(package.paymentMethod),
                                       style: TextStyle(
                                         color: Colors.grey[600],
                                         fontSize: 14,
@@ -363,7 +363,7 @@ class _ConsultaPacotesPageState extends State<ConsultaPacotesPage> {
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFF1565C0),
+                    color: Color(0xFF1565C0),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -372,7 +372,7 @@ class _ConsultaPacotesPageState extends State<ConsultaPacotesPage> {
                 _buildDetailRow('Total de Consultas', '${detailedPackage.totalAppointments}'),
                 _buildDetailRow('Consultas Restantes', '${detailedPackage.balance}'),
                 _buildDetailRow('Valor Total', _formatCurrency(detailedPackage.price)),
-                _buildDetailRow('Forma de Pagamento', detailedPackage.paymentMethod.toUpperCase()),
+                _buildDetailRow('Forma de Pagamento', _getPaymentMethodText(detailedPackage.paymentMethod)),
                 _buildDetailRow('Data de Compra', _formatDate(detailedPackage.createdAt)),
                 const SizedBox(height: 20),
                 Container(
@@ -429,7 +429,7 @@ class _ConsultaPacotesPageState extends State<ConsultaPacotesPage> {
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFF1565C0),
+                    color: Color(0xFF1565C0),
                   ),
                 ),
                 const SizedBox(height: 15),
@@ -452,7 +452,7 @@ class _ConsultaPacotesPageState extends State<ConsultaPacotesPage> {
                     ),
                   )
                 else
-                  ...detailedPackage.appointments.map((appointment) => _buildAppointmentCard(appointment)).toList(),
+                  ...detailedPackage.appointments.map((appointment) => _buildAppointmentCard(appointment)),
               ],
             ),
           ),
@@ -518,7 +518,7 @@ class _ConsultaPacotesPageState extends State<ConsultaPacotesPage> {
                 style: const TextStyle(
                   fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFF1565C0),
+                color: Color(0xFF1565C0),
                 ),
               ),
               Container(
@@ -600,11 +600,30 @@ class _ConsultaPacotesPageState extends State<ConsultaPacotesPage> {
       case 'scheduled':
         return Colors.blue;
       case 'cancelled':
+      case 'canceled_early':
+      case 'canceled_late':
         return Colors.red;
       case 'no_show':
         return Colors.orange;
       default:
         return Colors.grey;
+    }
+  }
+
+  String _getPaymentMethodText(String paymentMethod) {
+    switch (paymentMethod.toLowerCase()) {
+      case 'pix':
+        return 'Pix';
+      case 'cash':
+        return 'Dinheiro';
+      case 'credit_card':
+        return 'Cartão de Crédito';
+      case 'debit_card':
+        return 'Cartão de Débito';
+      case 'health_plan':
+        return 'Plano de Saúde';
+      default:
+        return paymentMethod;
     }
   }
 }

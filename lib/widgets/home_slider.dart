@@ -3,7 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../services/data_service.dart';
 
 class HomeSlider extends StatefulWidget {
-  const HomeSlider({Key? key}) : super(key: key);
+  const HomeSlider({super.key});
 
   @override
   State<HomeSlider> createState() => _HomeSliderState();

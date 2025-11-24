@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'screens/home_page.dart';
+import 'services/notification_service.dart';
 import 'services/auth_service.dart';
 
 void main() {
@@ -23,10 +24,15 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     _authService = AuthService();
     _initializeAuth();
+    _initializeNotifications();
   }
 
   Future<void> _initializeAuth() async {
     await _authService.checkLoggedInUser();
+  }
+
+  Future<void> _initializeNotifications() async {
+    await NotificationService.initialize();
   }
 
   @override

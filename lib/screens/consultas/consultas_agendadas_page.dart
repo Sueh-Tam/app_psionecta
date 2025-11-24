@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/appointment.dart';
 import '../../services/data_service.dart';
+import '../../services/notification_service.dart';
 import '../../services/auth_service.dart';
 import 'agendar_consulta_page.dart';
 
@@ -50,11 +51,10 @@ class _ConsultasAgendadasPageState extends State<ConsultasAgendadasPage> {
     try {
       final authService = Provider.of<AuthService>(context, listen: false);
       final userId = authService.currentUser?.id;
-      
       if (userId == null) {
         throw Exception('Usuário não autenticado');
       }
-      
+
       final appointments = await DataService.getScheduledAppointments(userId);
       if (mounted) {
         setState(() {
@@ -62,6 +62,13 @@ class _ConsultasAgendadasPageState extends State<ConsultasAgendadasPage> {
           _applyFilters();
           _isLoading = false;
         });
+
+        // Agenda notificações 1 dia antes para consultas futuras
+        final futurasAgendadas = _appointments
+            .where((a) => a.status.toLowerCase() == 'scheduled')
+            .toList();
+        await NotificationService.scheduleDayBeforeForAppointments(
+            futurasAgendadas);
       }
     } catch (e) {
       print('Erro ao carregar consultas: $e');
@@ -173,7 +180,7 @@ final appointmentDate = DateTime.parse(appointment.dtAvailability);
               SizedBox(
                 width: double.infinity,
                 child: DropdownButtonFormField<String>(
-                  value: _selectedStatus,
+                  initialValue: _selectedStatus,
                   decoration: InputDecoration(
                     labelText: 'Status',
                     border: OutlineInputBorder(
@@ -204,7 +211,7 @@ final appointmentDate = DateTime.parse(appointment.dtAvailability);
                 children: [
                   Expanded(
                     child: DropdownButtonFormField<int>(
-                      value: _selectedMonth,
+                      initialValue: _selectedMonth,
                       decoration: InputDecoration(
                         labelText: 'Mês',
                         border: OutlineInputBorder(
@@ -244,7 +251,7 @@ final appointmentDate = DateTime.parse(appointment.dtAvailability);
                   const SizedBox(width: 12),
                   Expanded(
                     child: DropdownButtonFormField<int>(
-                      value: _selectedYear,
+                      initialValue: _selectedYear,
                       decoration: InputDecoration(
                         labelText: 'Ano',
                         border: OutlineInputBorder(
@@ -446,43 +453,86 @@ final appointmentDate = DateTime.parse(appointment.dtAvailability);
               ),
             ),
             const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: appointment.status.toLowerCase() == 'scheduled'
-                        ? () => _showCancelDialog(appointment)
-                        : null,
-                    icon: const Icon(Icons.cancel_outlined),
-                    label: const Text('Cancelar'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.red.shade700,
-                      side: BorderSide(color: Colors.red.shade700),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+            // Botões para consultas agendadas
+            if (appointment.status.toLowerCase() == 'scheduled') ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: appointment.canCancel 
+                          ? () => _showCancelDialog(appointment)
+                          : null,
+                      icon: Icon(
+                        appointment.canCancel 
+                            ? Icons.cancel_outlined
+                            : Icons.cancel,
+                      ),
+                      label: const Text('Cancelar'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: appointment.canCancel 
+                            ? Colors.red.shade700
+                            : Colors.grey.shade600,
+                        side: BorderSide(
+                          color: appointment.canCancel 
+                              ? Colors.red.shade700
+                              : Colors.grey.shade400,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: appointment.status.toLowerCase() == 'scheduled'
-                        ? () => _showRescheduleDialog(appointment)
-                        : null,
-                    icon: const Icon(Icons.schedule),
-                    label: const Text('Reagendar'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue.shade800,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: appointment.canReschedule 
+                          ? () => _showRescheduleDialog(appointment)
+                          : null,
+                      icon: Icon(
+                        appointment.canReschedule 
+                            ? Icons.schedule 
+                            : Icons.schedule_outlined,
+                      ),
+                      label: Text(
+                        appointment.canReschedule 
+                            ? 'Reagendar'
+                            : 'Não é mais possível reagendar',
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: appointment.canReschedule 
+                            ? Colors.blue.shade800
+                            : Colors.grey.shade400,
+                        foregroundColor: appointment.canReschedule 
+                            ? Colors.white
+                            : Colors.grey.shade600,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                     ),
                   ),
+                ],
+              ),
+            ],
+            // Botão para consultas completadas
+            if (appointment.status.toLowerCase() == 'completed') ...[
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => _showMedicalRecordDialog(appointment),
+                  icon: const Icon(Icons.description),
+                  label: const Text('Visualizar prontuário'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green.shade700,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ],
         ),
       ),
@@ -598,6 +648,7 @@ final appointmentDate = DateTime.parse(appointment.dtAvailability);
   Future<void> _cancelAppointment(Appointment appointment) async {
     try {
       await DataService.cancelAppointment(appointment.id);
+      await NotificationService.cancelDayBeforeForAppointment(appointment);
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -631,6 +682,7 @@ final appointmentDate = DateTime.parse(appointment.dtAvailability);
     try {
       // Cancelar a consulta atual via API
       await DataService.cancelAppointment(appointment.id);
+      await NotificationService.cancelDayBeforeForAppointment(appointment);
       
       if (mounted) {
         // Navegar para a tela de agendamento
@@ -663,5 +715,106 @@ final appointmentDate = DateTime.parse(appointment.dtAvailability);
         );
       }
     }
+  }
+
+  void _showMedicalRecordDialog(Appointment appointment) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(
+                Icons.description,
+                color: Colors.blue.shade800,
+                size: 24,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Prontuário - Consulta #${appointment.id}',
+                style: TextStyle(
+                  color: Colors.blue.shade800,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          content: Container(
+            width: double.maxFinite,
+            constraints: const BoxConstraints(maxHeight: 400),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Informações da consulta
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Informações da Consulta',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.blue.shade800,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Data: ${appointment.formattedDate}',
+                          style: const TextStyle(fontSize: 13),
+                        ),
+                        Text(
+                          'Horário: ${appointment.formattedTime}',
+                          style: const TextStyle(fontSize: 13),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Prontuário
+                  Text(
+                    'Prontuário do Paciente',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.blue.shade800,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    appointment.medicalRecord ?? 'Prontuário não disponível para esta consulta.',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      height: 1.5,
+                      color: Color(0xFF424242),
+                    ),
+                    textAlign: TextAlign.left,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'Fechar',
+                style: TextStyle(
+                  color: Colors.blue.shade800,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

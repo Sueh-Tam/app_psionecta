@@ -63,4 +63,17 @@ class Availability {
   String get formattedTime {
     return hrAvailability;
   }
+
+  // Método para obter DateTime combinando data e hora
+  DateTime get dateTime {
+    try {
+      final date = DateTime.parse(dtAvailability);
+      final timeParts = hrAvailability.split(':');
+      final hour = int.parse(timeParts[0]);
+      final minute = int.parse(timeParts[1]);
+      return DateTime(date.year, date.month, date.day, hour, minute);
+    } catch (e) {
+      return DateTime.parse(dtAvailability);
+    }
+  }
 }

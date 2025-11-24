@@ -40,9 +40,7 @@ class User {
       documentType: json['document_type'],
       documentNumber: json['document_number'],
       birthDate: json['birth_date'],
-      appointmentPrice: json['appointment_price'] != null 
-          ? json['appointment_price'].toDouble() 
-          : null,
+      appointmentPrice: json['appointment_price']?.toDouble(),
       type: json['type'],
       situation: json['situation'],
       status: json['status'],

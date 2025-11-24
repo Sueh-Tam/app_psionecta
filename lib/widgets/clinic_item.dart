@@ -7,10 +7,10 @@ class ClinicItem extends StatelessWidget {
   final Function onTap;
 
   const ClinicItem({
-    Key? key,
+    super.key,
     required this.clinic,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -5,7 +5,7 @@ import '../widgets/clinic_item.dart';
 import 'psychologists_page.dart';
 
 class ClinicsPage extends StatelessWidget {
-  const ClinicsPage({Key? key}) : super(key: key);
+  const ClinicsPage({super.key});
 
   @override
   Widget build(BuildContext context) {

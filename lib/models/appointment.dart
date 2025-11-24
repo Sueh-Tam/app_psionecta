@@ -77,11 +77,15 @@ class Appointment {
   String get statusText {
     switch (status.toLowerCase()) {
       case 'completed':
-        return 'Concluída';
+        return 'Realizado';
       case 'scheduled':
-        return 'Agendada';
+        return 'Agendado';
       case 'cancelled':
-        return 'Cancelada';
+        return 'Cancelado';
+      case 'canceled_early':
+        return 'Cancelado Antecipadamente';
+      case 'canceled_late':
+        return 'Cancelado Tardiamente';
       case 'no_show':
         return 'Faltou';
       default:
@@ -99,6 +103,36 @@ class Appointment {
         return 'Cancelado';
       default:
         return paymentStatus;
+    }
+  }
+
+  bool get canReschedule {
+    try {
+      final appointmentDate = DateTime.parse(dtAvailability);
+      final now = DateTime.now();
+      final difference = now.difference(appointmentDate).inDays;
+      
+      // Só pode reagendar se a consulta não passou de mais de 1 dia
+      // e se o status for 'scheduled'
+      return difference <= 1 && status.toLowerCase() == 'scheduled';
+    } catch (e) {
+      // Em caso de erro ao parsear a data, não permite reagendar
+      return false;
+    }
+  }
+
+  bool get canCancel {
+    try {
+      final appointmentDate = DateTime.parse(dtAvailability);
+      final now = DateTime.now();
+      final difference = now.difference(appointmentDate).inDays;
+      
+      // Só pode cancelar se a consulta não passou de mais de 1 dia
+      // e se o status for 'scheduled'
+      return difference <= 1 && status.toLowerCase() == 'scheduled';
+    } catch (e) {
+      // Em caso de erro ao parsear a data, não permite cancelar
+      return false;
     }
   }
 }

@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import '../../config/app_config.dart';
 import 'dart:convert';
 import 'package:provider/provider.dart';
 import '../../services/data_service.dart';
 import '../../services/auth_service.dart';
 
 class CompraPacotesPage extends StatefulWidget {
-  const CompraPacotesPage({super.key});
+  final dynamic clinicaPreSelecionada;
+  
+  const CompraPacotesPage({super.key, this.clinicaPreSelecionada});
 
   @override
   State<CompraPacotesPage> createState() => _CompraPacotesPageState();
@@ -32,38 +35,66 @@ class _CompraPacotesPageState extends State<CompraPacotesPage> {
 
   Future<void> _carregarClinicas() async {
     try {
+      if (!mounted) return;
       setState(() {
         carregandoClinicas = true;
         erro = null;
       });
 
-      final response = await http.get(
-        Uri.parse('http://127.0.0.1:8000/api/clinics'),
-        headers: {'Content-Type': 'application/json'},
-      );
+      final response = await http
+          .get(
+            Uri.parse('${AppConfig.baseUrl}/clinics'),
+            headers: {'Content-Type': 'application/json'},
+          )
+          .timeout(const Duration(seconds: 10));
 
+      if (!mounted) return;
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        if (!mounted) return;
         setState(() {
           clinicas = data;
           carregandoClinicas = false;
+          
+          // Se há uma clínica pré-selecionada, definir como selecionada
+          if (widget.clinicaPreSelecionada != null) {
+            clinicaSelecionada = widget.clinicaPreSelecionada;
+            // Carregar psicólogos da clínica pré-selecionada
+            final clinicaId = int.tryParse(widget.clinicaPreSelecionada['id'].toString()) ?? 0;
+            if (clinicaId > 0) {
+              _carregarPsicologos(clinicaId);
+            }
+          }
         });
       } else {
+        if (!mounted) return;
         setState(() {
-          erro = 'Erro ao carregar clínicas';
+          clinicas = _getClinicasEstaticas();
           carregandoClinicas = false;
         });
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         clinicas = _getClinicasEstaticas();
         carregandoClinicas = false;
+        
+        // Se há uma clínica pré-selecionada, definir como selecionada
+        if (widget.clinicaPreSelecionada != null) {
+          clinicaSelecionada = widget.clinicaPreSelecionada;
+          // Carregar psicólogos da clínica pré-selecionada
+          final clinicaId = int.tryParse(widget.clinicaPreSelecionada['id'].toString()) ?? 0;
+          if (clinicaId > 0) {
+            _carregarPsicologos(clinicaId);
+          }
+        }
       });
     }
   }
 
   Future<void> _carregarPsicologos(int clinicaId) async {
     try {
+      if (!mounted) return;
       setState(() {
         carregandoPsicologos = true;
         psicologos = [];
@@ -71,24 +102,30 @@ class _CompraPacotesPageState extends State<CompraPacotesPage> {
         erro = null;
       });
 
-      final response = await http.get(
-        Uri.parse('http://127.0.0.1:8000/api/clinic/$clinicaId/psychologists'),
-        headers: {'Content-Type': 'application/json'},
-      );
+      final response = await http
+          .get(
+            Uri.parse('${AppConfig.baseUrl}/clinics/$clinicaId/psychologists'),
+            headers: {'Content-Type': 'application/json'},
+          )
+          .timeout(const Duration(seconds: 10));
 
+      if (!mounted) return;
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        if (!mounted) return;
         setState(() {
           psicologos = data;
           carregandoPsicologos = false;
         });
       } else {
+        if (!mounted) return;
         setState(() {
           erro = 'Erro ao carregar psicólogos';
           carregandoPsicologos = false;
         });
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         psicologos = _getPsicologosEstaticos();
         carregandoPsicologos = false;
@@ -209,14 +246,14 @@ class _CompraPacotesPageState extends State<CompraPacotesPage> {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFF1565C0),
+                color: Color(0xFF1565C0),
               ),
             ),
             const SizedBox(height: 20),
             if (carregandoClinicas)
               const Center(
                 child: CircularProgressIndicator(
-                  color: const Color(0xFF1565C0),
+                  color: Color(0xFF1565C0),
                 ),
               )
             else if (erro != null)
@@ -242,7 +279,8 @@ class _CompraPacotesPageState extends State<CompraPacotesPage> {
                   itemCount: clinicas.length,
                   itemBuilder: (context, index) {
                     final clinica = clinicas[index];
-                    final isSelected = clinicaSelecionada?['id'] == clinica['id'];
+                    // Comparar IDs convertendo ambos para string para garantir compatibilidade
+                    final isSelected = clinicaSelecionada?['id'].toString() == clinica['id'].toString();
                     
                     return Container(
                       margin: const EdgeInsets.only(bottom: 10),
@@ -319,7 +357,7 @@ class _CompraPacotesPageState extends State<CompraPacotesPage> {
                     },
                     child: const Text(
                       'Alterar Clínica',
-                      style: TextStyle(color: const Color(0xFF1565C0)),
+                      style: TextStyle(color: Color(0xFF1565C0)),
                     ),
                   ),
                 ],
@@ -383,7 +421,7 @@ class _CompraPacotesPageState extends State<CompraPacotesPage> {
                           trailing: isSelected 
                               ? const Icon(
                                   Icons.check_circle,
-                                  color: const Color(0xFF1565C0),
+                                  color: Color(0xFF1565C0),
                                 )
                               : const Icon(
                                   Icons.arrow_forward_ios,
@@ -419,7 +457,7 @@ class _CompraPacotesPageState extends State<CompraPacotesPage> {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF1565C0),
+                        color: Color(0xFF1565C0),
                       ),
                     ),
                     const SizedBox(height: 15),
@@ -443,7 +481,7 @@ class _CompraPacotesPageState extends State<CompraPacotesPage> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF1565C0),
+                        color: Color(0xFF1565C0),
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -563,7 +601,7 @@ class _CompraPacotesPageState extends State<CompraPacotesPage> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF1565C0),
+                        color: Color(0xFF1565C0),
                       ),
                     ),
                     const SizedBox(height: 12),

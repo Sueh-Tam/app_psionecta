@@ -30,8 +30,14 @@ Aplicativo Flutter para conexão entre pacientes e psicólogos, com agendamento 
 
 ## Configuração da API
 
-- Ajuste a `baseUrl` em `lib/config/app_config.dart` conforme seu ambiente.
-- Exemplo atual: `http://10.216.245.121:800/api`.
+- Antes de executar o app, suba o backend Laravel com seu IPv4 local:
+  - `php artisan serve --host SEU_IPV4 --port 800`
+  - Substitua `SEU_IPV4` pelo seu IPv4 da rede (ex.: `192.168.1.5`).
+
+- Ajuste a `baseUrl` em `lib/config/app_config.dart` para apontar para seu backend:
+  - Altere a linha `static const String universalBaseUrl = 'http://SUA_URL/api';`
+  - Exemplo: `static const String universalBaseUrl = 'http://192.168.1.5:800/api';`
+  - Use o mesmo IPv4 e porta que você passou no `php artisan serve`.
 
 ## Instalação e execução
 
